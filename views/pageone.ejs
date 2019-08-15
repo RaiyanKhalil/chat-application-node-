@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple Group Chat on Node.js</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src = script.js></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  </head>
+  <body>
+<!-- INPUT -->
+    <div class="row" id="userDiv" >
+        <div class="col-md-3"></div>
+        <div class="jumbotron col-md-6">
+            <form id="lol">
+                <div class="form-group">
+                    <label for="exampleInputEmail1">User Name</label>
+                    <input type="userName" class="form-control" id="username" aria-describedby="emailHelp" placeholder="User Name">
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputPassword1">Session Name</label>
+                    <input type="sessionName" class="form-control" id="sessionname" placeholder="Session Name">
+                </div>
+                <button type="click" id="submit1" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+        <div class="col-md-3"></div>
+    </div>
+    
+    <!-- TIMER -->
+    <div class="jumbotron row" id="form1" >
+
+    
+        <div class="col-md-4">
+          <div class="well">
+            <h3 id = 'sessionHead'></h3>
+            <h3>Members</h3>
+            <ul class="list-group" id="users"></ul>
+            <h3>Timer</h3>
+            <span><p id="timer"></p></span>
+            <button id="startbtn">Start</button>
+            <button id="stopbtn">Stop</button>
+          </div>
+        </div>
+<!-- MESSAGE -->
+    <ul id="messages" class="col-md-6"></ul>
+    <form class="col-md-6" action="/session"   >
+    <div class="form-group" id="chatForm" >
+        <label for="exampleInputPassword1">Session Name</label>
+        <input class="form-control" id="txt" autocomplete="off" autofocus="on" oninput=" isTyping()" placeholder="type your message here..." />
+    </div>
+    <button id = 'messagebtn' class="btn btn-primary">Send</button>
+  </form>
+  </div>
+
+    <script>
+    document.getElementById('timer').innerHTML = 15+":"+00;
+  
+  var myTime;
+
+  $('#startbtn').click(function startTimer(){
+    
+    $('#stopbtn').show();
+    $('#chatForm').show();
+    var presentTime = document.getElementById('timer').innerHTML;
+    var timeArray = presentTime.split(/[:]+/);
+    var m = timeArray[0];
+    var s = checkSecond((timeArray[1] - 1));
+    if(s==59){m=m-1}
+
+    document.getElementById('timer').innerHTML = m + ":" + s;
+    myTime= setTimeout(startTimer, 1000);
+    if(m==00 && s==00){
+      clearTimeout(myTime);
+      document.getElementById('timer').innerHTML = 00 + ":" + 00;
+      $('#stopbtn').hide();
+      $('#messagebtn').hide();
+      $('#message').hide();
+      //$('#chatForm').hide();
+      
+     
+    }
+  });
+
+  $('#stopbtn').click(function stopTimer(){
+    clearTimeout(myTime);
+    document.getElementById('timer').innerHTML = 00 + ":" + 00;
+    
+    $('#messagebtn').hide();
+    $('#message').hide();
+    $('#chatForm').hide();
+    
+  });
+  function checkSecond(sec) {
+    if (sec < 10 && sec >= 0) {sec = "0" + sec};
+    if (sec < 0) {sec = "59"};
+    return sec;
+  }
+    </script>
+    <script>
+            var socket = io.connect('http://localhost:3000');
+            // submit text message without reload/refresh the page
+            $('form').submit(function(e){
+                e.preventDefault(); // prevents page reloading
+                socket.emit('chat_message', $('#txt').val());
+                $('#txt').val('');
+                return false;
+            });
+            // append the chat text message
+            socket.on('chat_message', function(msg){
+                $('#messages').append($('<li>').html(msg));
+            });
+            // append text if someone is online
+            socket.on('is_online', function(username) {
+                $('#messages').append($('<li>').html(username));
+            });
+            
+    </script>
+    <script>
+      var socket = io.connect();
+
+      $('#submit1').click(function(event){
+        $('#userDiv').hide();
+
+
+        var username = $('#username').val();
+         socket.emit('username', username);
+         console.log(username);
+
+         var sessionname = $('#sessionname').val();
+         console.log(sessionname);
+         socket.emit('sessionname', sessionname);
+         
+      })
+            
+      $('#sessionHead').append($('h3').val(sessionname));
+
+            
+    </script>
+  </body>
+</html>
